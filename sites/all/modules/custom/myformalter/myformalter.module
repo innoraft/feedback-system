@@ -28,25 +28,77 @@ function new_valid_function(&$form, &$form_state) {
 
 	foreach ($options as $key => $value) {
 	$nid = $value->nid;
+	$timestamp = $value->created;
 	$feed = node_load($nid);
 // dpm($feed);
-$field_value = field_get_items('node', $feed, 'field_users')[0]['target_id'];
-$field_value1 = field_get_items('node', $feed, 'field_time_line')[0]['tid'];
+$user_id = field_get_items('node', $feed, 'field_users')[0]['target_id'];
+$user_period = field_get_items('node', $feed, 'field_time_line')[0]['tid'];
+$user_date = format_date($timestamp ,'custom','d');
+$user_month = format_date($timestamp ,'custom','m');
 
 
-if($form_state['input']['field_time_line']['und'] == $field_value1){
+$current_user_timestamp = $user->timestamp;
+$current_user_date = format_date($current_user_timestamp,'custom','d');
+$current_user_month = format_date($current_user_timestamp,'custom','m');
 
 
-  	 	if ($form_state['input']['field_users']['und'] == $field_value and $form_state['input']['field_time_line']['und'] == $field_value1){
-  	 		form_set_error('field_users', t('Feedback has already been given for this particular user.'));
+if($current_user_date > '5' and $current_user_date < '15'){
+ 	if($form_state['input']['field_time_line']['und'] != '25'){
+ 		form_set_error('field_time_line', t('Please select PERIOD-I.'));
+ 	}
+ 	else{
+
+
+	 if($form_state['input']['field_time_line']['und'] == $user_period){
+
+
+  	 	if ($form_state['input']['field_users']['und'] == $user_id and $form_state['input']['field_time_line']['und'] == $user_period and $current_user_month == $user_month){
+  	 		form_set_error('field_users', t('Feedback has already been given for this particular user in this period.'));
   	 	}
 
   	 	else{
   	 		continue;
   	 	}
 
+	 }
+  	} 	
 }
-  	 	
+
+
+if($current_user_date > '20' and $current_user_date <= '31') {
+	if($form_state['input']['field_time_line']['und'] != '26'){
+		form_set_error('field_time_line', t('Please select PERIOD-II.'));
+
+	}
+	else{
+
+
+	if($form_state['input']['field_time_line']['und'] == $user_period){
+
+		if ($form_state['input']['field_users']['und'] == $user_id and $form_state['input']['field_time_line']['und'] == $user_period and $current_user_month == $user_month){
+  	 		form_set_error('field_users', t('Feedback has already been given for this particular user in this period.'));
+  	 	}
+
+  	 	else{
+  	 		continue;
+  	 	}
+	}
+	}
+}
+
+
+if(($current_user_date >= '1' and $current_user_date <= '5') || ($current_user_date >= '15' and $current_user_date <= '20')){
+	if($form_state['input']['field_time_line']['und'] == $user_period){
+		if ($form_state['input']['field_users']['und'] == $user_id and $form_state['input']['field_time_line']['und'] == $user_period and $current_user_month == $user_month){
+  	 		form_set_error('field_users', t('Feedback has already been given for this particular user in this period.'));
+  	 	}
+
+  	 	else{
+  	 		continue;
+  	 	}
+	}
+}
+
 
 
   	}  
