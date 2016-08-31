@@ -1,0 +1,64 @@
+<?php
+//In form alter 
+// add custom validation function
+
+
+function myformalter_form_give_feedback_node_form_alter(&$form, &$form_state, $form_id){
+	
+dpm($form_state);
+		$form['#validate'][] = 'new_valid_function';
+  		 
+}
+  	 
+  //In custom validation function
+  // check whether the selected time period is valid
+    // check if current has not given more than one feedback for the selected target user for the selected time period.
+		
+function new_valid_function(&$form, &$form_state) {
+//dpm($form_state);
+	
+	global $user;
+
+	$query1 = db_select('node', 'n')
+	        ->condition('n.uid', $user->uid, '=')
+            ->fields('n', array('nid', 'type','created'));
+    $result1 = $query1->execute();
+    $options = $result1->fetchAll();
+
+
+	foreach ($options as $key => $value) {
+	$nid = $value->nid;
+	$feed = node_load($nid);
+// dpm($feed);
+$field_value = field_get_items('node', $feed, 'field_users')[0]['target_id'];
+$field_value1 = field_get_items('node', $feed, 'field_time_line')[0]['tid'];
+
+
+if($form_state['input']['field_time_line']['und'] == $field_value1){
+
+
+  	 	if ($form_state['input']['field_users']['und'] == $field_value and $form_state['input']['field_time_line']['und'] == $field_value1){
+  	 		form_set_error('field_users', t('Feedback has already been given for this particular user.'));
+  	 	}
+
+  	 	else{
+  	 		continue;
+  	 	}
+
+}
+  	 	
+
+
+  	}  
+}
+	
+
+
+
+
+
+ 
+  	
+	
+
+

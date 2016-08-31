@@ -1,0 +1,3 @@
+name = my form alter
+description = "used to create a form alter"
+core = 7.x
