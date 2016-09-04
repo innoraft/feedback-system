@@ -1,0 +1,113 @@
+<?php
+
+function mentor_form_mentor_rating_node_form_alter(&$form, &$form_state, $form_id){
+	dpm($form_state);
+	dpm($form);
+
+	/*$form['field_feedback_node_title'] = array(
+		//'#weight'   => '1',
+		'#type'     => 'select',
+		'#required' => TRUE,
+		'#options'  => myoptions(),
+		'#title'    => 'Select the feedback node title',
+	);*/
+
+/*	$form['#validate'][] = 'new_validation';
+	$form['#submit'][] = 'mentor_form_submit';
+*/
+}
+	
+
+function myoptions() {
+	
+	global $user;
+	$mentorlogin_id = $user->uid; 
+	$mentor_timestamp = $user->timestamp;
+	$mentor_user_date = format_date($mentor_timestamp,'custom','d');
+	$mentor_user_month = format_date($mentor_timestamp,'custom','m');
+
+
+	$query3 = db_select('node', 'n')
+	       ->condition('n.type','self_rating','=')
+	       ->fields('n', array('nid', 'uid','created'));
+	$result3  = $query3->execute();
+	$options3 = $result3->fetchAll();
+
+
+	foreach ($options3 as $key => $value) {
+		$nid = $value->nid;
+		$timestamp = $value->created;
+		$authorid = $value->uid;
+		$feed = node_load($nid);
+
+
+		$mentor_assign_value = field_get_items('node', $feed, 'field_mentor')[0]['target_id'];
+		//$user_value = field_get_items('node', $feed, 'field_users')[0]['target_id'];
+
+		if ($mentorlogin_id == $mentor_assign_value) {
+				$query4 = db_select('field_data_field_mentor', 'n')
+			          ->condition('n.field_mentor_target_id',$mentorlogin_id,'=')
+		            ->fields('n', array('entity_type','entity_id','bundle'));
+		    $result4 = $query4->execute();
+		    $options4 = $result4->fetchAll();
+				$node_availfor_mentor_id = array();
+				$node_title_selfrating   = array();
+
+	   		foreach ($options4 as $value1) {
+		    	$node_id = $value1->entity_id;
+
+
+	    		$query5 = new EntityFieldQuery();
+					$query5->entityCondition('entity_type', 'node')
+	  			   	   ->entityCondition('bundle', 'self_rating')
+	  			   	   ->propertyCondition('nid', $node_id ,'=');
+	  			$result5 = $query5->execute();
+
+
+  				//$node_availfor_mentor_id = array();
+  				foreach ($result5['node'] as $value2)	{
+						$node_availfor_mentor_id[] = $value2->nid;
+
+						$nids = array_keys($result5['node']);
+		        $items = node_load('node', $nids);
+		        $node_title_selfrating[] = $items->title;
+					}
+	    	}
+		}
+	}
+	return $node_title_selfrating;
+}
+
+function new_validation($form, &$form_state){
+	 myoptions();
+}
+
+function mentor_form_submit($form, &$form_state) {
+		dpm($form_state);
+//	$node_title = $form_state['values']['field_feedback_node_title'];
+
+	/*db_insert('field_data_field_feedback_node_title')
+    ->fields(array(
+      'field_feedback_node_title_value' => $node_title,
+      'entity_type' => 'node',
+      'bundle'      => 'self_rating',
+    ))->execute();
+  */
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+		  		
+					
+
+

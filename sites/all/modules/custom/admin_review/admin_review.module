@@ -1,0 +1,17 @@
+<?php
+	
+	//Implementation of hook menu
+
+
+function admin_review_menu() {
+	$items = array();
+
+	$items['view/myview'] = array(
+		'title' => 'all reviews',
+		'description' => 'all feedback will be shown.',
+		'page callback' => 'all_feedbacks',
+		'access callback' => TRUE
+	);
+
+	return $items;
+}
