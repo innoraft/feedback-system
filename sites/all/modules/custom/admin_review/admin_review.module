@@ -1,17 +1,371 @@
-<?php
+ <?php
 	
-	//Implementation of hook menu
+	//Implementation of hook menu for admin review page
 
 
 function admin_review_menu() {
 	$items = array();
 
-	$items['view/myview'] = array(
+	$items['review/allreviews'] = array(
 		'title' => 'all reviews',
 		'description' => 'all feedback will be shown.',
-		'page callback' => 'all_feedbacks',
+		'page callback' => 'myview',
 		'access callback' => TRUE
 	);
 
 	return $items;
 }
+
+
+// function callback all_feedbacks
+
+function all_feedbacks($form, &$form_state) {
+
+  $form['userslist'] = array(
+	 '#type' => 'select',
+	 '#title' => t('Choose User'), 
+	 '#options' => getUsers(),
+  );
+
+  $form['submit_button'] = array(
+   '#type' => 'submit',
+   '#value' => t('GET'), 
+  );
+	return $form;
+}
+
+// form submit
+
+function all_feedbacks_submit($form, &$form_state) {
+	$user_id_value = $form_state['values']['userslist'];
+	drupal_goto('review/allreviews', array('query'=>array('user_id' => $user_id_value)
+	));
+}
+
+
+// function for choosing users
+function getUsers(){
+	$query6 = db_select('users','u')
+					->condition('u.uid',0,'<>')
+					->fields('u',array('uid','name'))
+					->execute();
+	$result6 = $query6->fetchAll();
+	$list = array();
+	$list['a'] = 'Select';
+
+	foreach ($result6 as $key => $value6) {
+		$list[$value6->uid] = $value6->name;
+	}
+	return $list;
+}
+
+
+
+// showing all  self appraisal feedbacks related to that user
+
+function reviews_self(){
+	$query_param = drupal_get_query_parameters();
+	if(!empty($query_param)){
+		$userid_condition = $query_param['user_id'];
+		//dpm($userid_condition);
+	}
+	global $user;
+	$current_user_timestamp = $user->timestamp;
+	$current_user_date = format_date($current_user_timestamp,'custom','d');
+	$current_user_month = format_date($current_user_timestamp,'custom','m');
+	$current_user_less_month = $current_user_month -1;
+
+
+	// if($current_user_date >'5' and $current_user_date <'21')
+
+	$query7 = new EntityFieldQuery();
+  $query7->entityCondition('entity_type', 'node')
+         ->entityCondition('bundle', 'self_rating')
+         ->propertyCondition('uid',$userid_condition,'=');
+	
+  $result7 = $query7->execute();
+  if(!empty($result7)) {
+
+	  $header = array(t('Field learning'), t('Time spent'), t('Productivity'),  t('Timeline'), t('Mentor'));
+		$rows = array();
+	 
+		foreach ($result7['node'] as $value7) {
+			$nid = $value7->nid;
+			$nodes = node_load($nid);
+			 dpm($nodes);   
+
+		  // field learning field collection extraction
+
+			$item1 = entity_load('field_collection_item', array($nodes->field_learning[LANGUAGE_NONE][0]['value']));
+			//dpm($item1);
+			$feedback1 = array();
+			$rating1 = array();
+			foreach ($item1 as $key => $itemid) {
+				$feedback1 = $itemid->field_feedback['und'][0]['value'];
+				$rating1 = $itemid->field_rating['und'][0]['value'];
+			}
+			//dpm($rating1);
+
+
+			
+			//	field time spent  field collection extraction
+
+			$item2 = entity_load('field_collection_item', array($nodes->field_time_spent[LANGUAGE_NONE][0]['value']));
+			$feedback2 = array();
+			$rating2 = array();
+			foreach ($item2 as $key => $itemid2) {
+				$feedback2 = $itemid2->field_feedback['und'][0]['value'];
+				$rating2 = $itemid2->field_rating['und'][0]['value'];
+			}
+
+
+			// field productivity field collection extraction
+
+			$item3 = entity_load('field_collection_item', array($nodes->field_productivity[LANGUAGE_NONE][0]['value']));
+			$feedback3 = array();
+			$rating3 = array();
+			foreach ($item3 as $key => $itemid3) {
+				$feedback3 = $itemid3->field_feedback['und'][0]['value'];
+				$rating3 = $itemid3->field_rating['und'][0]['value'];
+			}
+
+
+			// field timeline 
+
+			$item4 = field_get_items('node',$nodes,'field_time_line')[0]['tid'];
+			$taxo_id = taxonomy_term_load($item4);
+			$timeline_name = $taxo_id->name;
+			//dpm($timeline_name);
+
+
+			// field mentor
+
+			$item5 = field_get_items('node',$nodes,'field_mentor')[0]['uid'];
+			$ment_id = user_load($item5);
+			$mentor_name = $ment_id->name;
+
+			$subrow = array();
+		  $subrow[] = $feedback1.' <br/> '.$rating1;
+		  $subrow[] = $feedback2.' <br/> '.$rating2;
+		  $subrow[] = $feedback3.' <br/> '.$rating3;
+		  $subrow[] = $timeline_name;
+		  $subrow[] = $mentor_name;
+		  $rows[] = $subrow;
+	  }  
+		  
+		return theme('table', array('header' => $header, 'rows' => $rows, 'caption' => 'SELF APPRAISAL'));
+	}
+}
+	  
+		
+
+
+
+// showing all the feedbacks given by all members to seleted user
+
+function reviews_feedback(){
+	$query_paramas = drupal_get_query_parameters();
+	if(!empty($query_paramas)){
+		$userid_condition = $query_paramas['user_id'];
+	}
+
+	
+  $query8 =db_select('field_data_field_users','fu')
+         ->condition('fu.field_users_target_id',$userid_condition,'=')
+				 ->fields('fu',array('entity_type','bundle','entity_id'))
+				 ->execute();
+
+  $result8 = $query8->fetchAll();
+ 
+
+  if(!empty($result8)) {
+		
+		$user_ref_node_title = array();
+
+		$header = array(t('Username'), t('Feedback given by'), t('Feedback'), t('Rating'), t('Timeline'));
+		$rows = array();
+	 
+  	foreach ($result8 as $value8) {
+  		$nid= $value8->entity_id;
+  	
+	  	$query9 = new EntityFieldQuery();
+			$query9->entityCondition('entity_type', 'node')
+			   	   ->entityCondition('bundle', 'give_feedback')
+			   	   ->propertyCondition('nid', $nid ,'=');
+			$result9 = $query9->execute();
+			
+
+			foreach ($result9['node'] as $value9)	{
+				$user_ref_node_id = $value9->nid;
+				$nids = array_keys($result9['node']);
+	      $items = node_load('node', $nids);
+	     // dpm($items);
+
+	      $author_id = $items->uid;
+	      $aids = user_load($author_id);
+	      $author_name = $aids->name;
+	      
+	      $item1 = field_get_items('node',$items,'field_feedback_')[0]['value'];
+	     
+	      $item2 = field_get_items('node',$items,'field_rating')[0]['value'];
+	      
+
+	      $item3 = field_get_items('node',$items,'field_time_line')[0]['tid'];
+	      $period_id = taxonomy_term_load($item3);
+				$period_name = $period_id->name;
+
+	      
+				$item4 = field_get_items('node',$items,'field_users')[0]['target_id'];
+				$uids = user_load($item4);
+				$user_name = $uids->name;
+
+				
+				$subrow = array();
+			  $subrow[] = $user_name;
+			  $subrow[] = $author_name;
+			  $subrow[] = $item1;
+			  $subrow[] = $item2;
+			  $subrow[] = $period_name;
+			  $rows[] = $subrow;
+			}
+		}	
+	
+			  
+		return theme('table', array('header' => $header, 'rows' => $rows, 'caption' => 'GIVE FEEDBACK')); 
+	}    
+}
+				
+	      
+  	
+
+function reviews_mentor(){
+	$query_param1 = drupal_get_query_parameters();
+	if(!empty($query_param1)){
+		$userid_condition = $query_param1['user_id'];
+		//dpm($userid_condition);
+	}
+
+	$query10 = new EntityFieldQuery();
+  $query10->entityCondition('entity_type', 'node')
+         ->entityCondition('bundle', 'self_rating')
+         ->propertyCondition('uid',$userid_condition,'=');
+	
+  $result10 = $query10->execute();
+  $header = array(t('Learning'), t('Timespent'), t('Productivity'), t('Mentor Assigned'));
+		$rows = array();
+	 
+  if(!empty($result10)) {
+  	foreach ($result10['node'] as $value10) {
+			$nid1 = $value10->nid;
+			$nodes1 = node_load($nid1);
+
+			$query11 =db_select('field_data_field_xyz','x')
+         ->condition('x.field_xyz_target_id',$nid1,'=')
+				 ->fields('x',array('entity_type','bundle','entity_id'))
+				 ->execute();
+
+		  $result11 = $query11->fetchAll();
+		 // dpm($result11);
+
+
+		  foreach ($result11 as $value11) {
+	  		$nid2= $value11->entity_id;
+	  	
+		  	$query12 = new EntityFieldQuery();
+				$query12->entityCondition('entity_type', 'node')
+				   	   ->entityCondition('bundle', 'mentor_rating')
+				   	   ->propertyCondition('nid', $nid2 ,'=');
+				$result12 = $query12->execute();
+				//dpm($result12);
+				foreach ($result12['node'] as $value12)	{
+					$mentor_ref_node_id = $value12->nid;
+					$nids3 = array_keys($result12['node']);
+		      $items3 = node_load('node', $nids3);
+					// dpm($items3);
+
+					$mentor_id = $items3->uid;
+					$uids_ment = user_load($mentor_id);
+					$mentor_name_author = $uids_ment->name;
+					// dpm($mentor_name_author);
+
+					// field learning field collection extraction
+
+					$item1 = entity_load('field_collection_item', array($items3->field_learning[LANGUAGE_NONE][0]['value']));
+					//dpm($item1);
+					$feedback1 = array();
+					$rating1 = array();
+					foreach ($item1 as $key => $itemid) {
+						$feedback1 = $itemid->field_feedback['und'][0]['value'];
+						$rating1 = $itemid->field_rating['und'][0]['value'];
+					}
+					//dpm($rating1);
+
+
+			
+					//	field time spent  field collection extraction
+
+					$item2 = entity_load('field_collection_item', array($items3->field_time_spent[LANGUAGE_NONE][0]['value']));
+					$feedback2 = array();
+					$rating2 = array();
+					foreach ($item2 as $key => $itemid2) {
+						$feedback2 = $itemid2->field_feedback['und'][0]['value'];
+						$rating2 = $itemid2->field_rating['und'][0]['value'];
+					}
+
+
+					// field productivity field collection extraction
+
+					$item3 = entity_load('field_collection_item', array($items3->field_productivity[LANGUAGE_NONE][0]['value']));
+					$feedback3 = array();
+					$rating3 = array();
+					foreach ($item3 as $key => $itemid3) {
+						$feedback3 = $itemid3->field_feedback['und'][0]['value'];
+						$rating3 = $itemid3->field_rating['und'][0]['value'];
+					}
+
+
+					$subrow = array();
+				  $subrow[] = $feedback1.' <br/> '.$rating1;
+				  $subrow[] = $feedback2.' <br/> '.$rating2;
+				  $subrow[] = $feedback3.' <br/> '.$rating3;
+				  $subrow[] = $mentor_name_author;
+				  $rows[] = $subrow;
+
+
+		    }
+		  }
+		}
+	
+	 return theme('table', array('header' => $header, 'rows' => $rows, 'caption' => 'MENTOR APPRAISAL')); 
+	}
+}
+
+  	
+
+
+
+
+
+
+
+
+
+
+
+
+	
+// for page callback- render forms and theme
+
+function myview(){
+	$form_view = drupal_get_form('all_feedbacks');
+	$output = render($form_view);
+	$output .= reviews_self();
+	$output .= reviews_feedback();
+	$output .= reviews_mentor();
+
+	return $output;
+}
+
+ 
+
+
