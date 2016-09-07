@@ -1,6 +1,10 @@
  <?php
+
+
+/*
+* Implementation of hook menu for admin review page
+*/ 
 	
-	//Implementation of hook menu for admin review page
 
 
 function admin_review_menu() {
@@ -17,7 +21,10 @@ function admin_review_menu() {
 }
 
 
-// function callback all_feedbacks
+/*
+*function callback all_feedbacks for hook menu
+*/
+
 
 function all_feedbacks($form, &$form_state) {
 
@@ -34,16 +41,21 @@ function all_feedbacks($form, &$form_state) {
 	return $form;
 }
 
-// form submit
+/* 
+*form submit
+*/
 
 function all_feedbacks_submit($form, &$form_state) {
 	$user_id_value = $form_state['values']['userslist'];
-	drupal_goto('review/allreviews', array('query'=>array('user_id' => $user_id_value)
+	drupal_goto('node/add/review', array('query'=>array('user_id' => $user_id_value)
 	));
 }
 
 
-// function for choosing users
+/*
+* function for choosing users
+*/
+
 function getUsers(){
 	$query6 = db_select('users','u')
 					->condition('u.uid',0,'<>')
@@ -60,8 +72,52 @@ function getUsers(){
 }
 
 
+/*
+* Implements hook_block_info().
+* Used to create a custom block
+*/
 
-// showing all  self appraisal feedbacks related to that user
+
+function admin_review_block_info() {
+  $blocks = array();
+  $blocks['my_block'] = array(
+	  'info' => t('All feedback Block'),
+  );
+  return $blocks;
+}
+
+
+
+/**
+* Implements hook_block_view().
+*/
+
+function admin_review_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'my_block':
+      $block['subject'] = t('self appraisal Block');
+      $block['content'] = reviews_self();
+      break;
+
+    case 'my_block':
+      $block['subject'] = t('give feedback Block');
+      $block['content'] = reviews_feedback();
+      break;
+
+    case 'my_block':
+      $block['subject'] = t('mentor appraisal Block');
+      $block['content'] = reviews_mentor();
+      break;
+  }    
+  return $block;
+}
+
+
+/*
+*showing all  self appraisal feedbacks related to that user
+*/
+
 
 function reviews_self(){
 	$query_param = drupal_get_query_parameters();
@@ -92,7 +148,7 @@ function reviews_self(){
 		foreach ($result7['node'] as $value7) {
 			$nid = $value7->nid;
 			$nodes = node_load($nid);
-			 dpm($nodes);   
+			 // dpm($nodes);   
 
 		  // field learning field collection extraction
 
@@ -153,15 +209,20 @@ function reviews_self(){
 		  $rows[] = $subrow;
 	  }  
 		  
-		return theme('table', array('header' => $header, 'rows' => $rows, 'caption' => 'SELF APPRAISAL'));
+		$out1 = theme('table', array('header' => $header, 'rows' => $rows, 'caption' => 'SELF APPRAISAL'));
+		$out = '<div class="my">'. $out1 .'</div>';
+
+		return $out;
 	}
 }
 	  
-		
+
+	
+/*
+* showing all the feedbacks given by all members to seleted user
+*/
 
 
-
-// showing all the feedbacks given by all members to seleted user
 
 function reviews_feedback(){
 	$query_paramas = drupal_get_query_parameters();
@@ -235,8 +296,9 @@ function reviews_feedback(){
 	}    
 }
 				
-	      
-  	
+/*
+*	showing all the feedbacks given by mentor to selected user.      
+ */ 	
 
 function reviews_mentor(){
 	$query_param1 = drupal_get_query_parameters();
@@ -342,30 +404,61 @@ function reviews_mentor(){
 
   	
 
+/*
+*for page callback- to render form on hook menu page
+*/
 
 
-
-
-
-
-
-
-
-
-
-	
-// for page callback- render forms and theme
 
 function myview(){
 	$form_view = drupal_get_form('all_feedbacks');
-	$output = render($form_view);
-	$output .= reviews_self();
+	$output = drupal_render($form_view);
+	/*$output .= reviews_self();
 	$output .= reviews_feedback();
 	$output .= reviews_mentor();
+*/
 
 	return $output;
 }
 
+
+
+/*
+* form alter on add review from 
+*/
+
+
+
+function admin_review_form_review_node_form_alter(&$form, &$form_state, $form_id){
+	
+	
+	$query_param = drupal_get_query_parameters();
+	if(!empty($query_param)){
+		$userid_condition = $query_param['user_id'];
+	}
+
+  $class  = reviews_self();
+  $class .= reviews_feedback();
+  $class .= reviews_mentor();
+
+	$form['#prefix'] = '<div>' .$class. '</div>';
+  $form['#suffix'] = '</div>';
+}
+
+	
+	
+
  
 
 
+
+
+
+
+
+
+
+
+ 
+
+	
