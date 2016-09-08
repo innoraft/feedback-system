@@ -45,6 +45,16 @@ function all_feedbacks($form, &$form_state) {
 *form submit
 */
 
+function all_feedbacks_validate(){
+	
+}
+
+
+
+/* 
+*form submit
+*/
+
 function all_feedbacks_submit($form, &$form_state) {
 	$user_id_value = $form_state['values']['userslist'];
 	drupal_goto('node/add/review', array('query'=>array('user_id' => $user_id_value)
@@ -129,26 +139,53 @@ function reviews_self(){
 	$current_user_timestamp = $user->timestamp;
 	$current_user_date = format_date($current_user_timestamp,'custom','d');
 	$current_user_month = format_date($current_user_timestamp,'custom','m');
-	$current_user_less_month = $current_user_month -1;
+	$current_user_year = format_date($current_user_timestamp,'custom','Y');
+	$current_user_month_less = $current_user_month -1;
+	$date1 = mktime(0,0,0,$current_user_month_less,15,$current_user_year);
+	$date2 = mktime(23,59,59,$current_user_month,05,$current_user_year);
+	$date3 = mktime(0,0,0,$current_user_month,01,$current_user_year);
+	$date4 = mktime(23,59,59,$current_user_month,20,$current_user_year);
 
+	if($current_user_date >'5' and $current_user_date <'21') {
+	 	$query7 = db_select('node', 'n')
+		       ->condition('n.type', 'self_rating','=')
+		       ->condition('n.created',array($date1,$date2),'BETWEEN')
+		       ->condition('n.uid',$userid_condition,'=')
+		       ->fields('n',array('nid','uid','created','title'));
 
-	// if($current_user_date >'5' and $current_user_date <'21')
+   	$query7->join('field_data_field_time_line','tl','n.nid = tl.entity_id');
+   	$query7->condition('tl.field_time_line_tid','26','=');
+   	$query7->fields('tl',array('field_time_line_tid'));
+  }  
 
-	$query7 = new EntityFieldQuery();
-  $query7->entityCondition('entity_type', 'node')
-         ->entityCondition('bundle', 'self_rating')
-         ->propertyCondition('uid',$userid_condition,'=');
+  else{
+  	$query7 = db_select('node', 'n')
+		       ->condition('n.type', 'self_rating','=')
+		       ->condition('n.created',array($date3,$date4),'BETWEEN')
+		       ->condition('n.uid',$userid_condition,'=')
+		       ->fields('n',array('nid','uid','created','title'));
+
+   	$query7->join('field_data_field_time_line','tl','n.nid = tl.entity_id');
+   	$query7->condition('tl.field_time_line_tid','25','=');
+   	$query7->fields('tl',array('field_time_line_tid'));
+  }
+	
 	
   $result7 = $query7->execute();
-  if(!empty($result7)) {
+  $fields7 =$result7->fetchAll();
+  if(!empty($fields7)) {
 
 	  $header = array(t('Field learning'), t('Time spent'), t('Productivity'),  t('Timeline'), t('Mentor'));
 		$rows = array();
 	 
-		foreach ($result7['node'] as $value7) {
+		foreach ($fields7 as $key => $value7) {
 			$nid = $value7->nid;
 			$nodes = node_load($nid);
-			 // dpm($nodes);   
+			 // dpm($nodes); 
+
+		  $node_timestamp = $nodes->created;
+
+
 
 		  // field learning field collection extraction
 
@@ -230,6 +267,16 @@ function reviews_feedback(){
 		$userid_condition = $query_paramas['user_id'];
 	}
 
+	global $user;
+	$current_user_timestamp = $user->timestamp;
+	$current_user_date = format_date($current_user_timestamp,'custom','d');
+	$current_user_month = format_date($current_user_timestamp,'custom','m');
+	$current_user_year = format_date($current_user_timestamp,'custom','Y');
+	$current_user_month_less = $current_user_month -1;
+	$date1 = mktime(0,0,0,$current_user_month_less,15,$current_user_year);
+	$date2 = mktime(23,59,59,$current_user_month,05,$current_user_year);
+	$date3 = mktime(0,0,0,$current_user_month,01,$current_user_year);
+	$date4 = mktime(23,59,59,$current_user_month,20,$current_user_year);
 	
   $query8 =db_select('field_data_field_users','fu')
          ->condition('fu.field_users_target_id',$userid_condition,'=')
@@ -248,46 +295,68 @@ function reviews_feedback(){
 	 
   	foreach ($result8 as $value8) {
   		$nid= $value8->entity_id;
-  	
-	  	$query9 = new EntityFieldQuery();
-			$query9->entityCondition('entity_type', 'node')
-			   	   ->entityCondition('bundle', 'give_feedback')
-			   	   ->propertyCondition('nid', $nid ,'=');
+
+
+  		if($current_user_date >'5' and $current_user_date <'21') {
+			 	$query9 = db_select('node', 'n')
+				       ->condition('n.type', 'give_feedback','=')
+				       ->condition('n.created',array($date1,$date2),'BETWEEN')
+				       ->condition('n.nid',$nid,'=')
+				       ->fields('n',array('nid','uid','created','title'));
+
+		   	$query9->join('field_data_field_time_line','tl','n.nid = tl.entity_id');
+		   	$query9->condition('tl.field_time_line_tid','26','=');
+		  }  
+
+		  else{
+		  	$query9 = db_select('node', 'n')
+				       ->condition('n.type', 'give_feedback','=')
+				       ->condition('n.created',array($date3,$date4),'BETWEEN')
+				       ->condition('n.nid',$nid,'=')
+				       ->fields('n',array('nid','uid','created','title'));
+
+		   	$query9->join('field_data_field_time_line','tl','n.nid = tl.entity_id');
+		   	$query9->condition('tl.field_time_line_tid','25','=');
+		  }
+	
 			$result9 = $query9->execute();
-			
+			$fields9 = $result9->fetchAll();
 
-			foreach ($result9['node'] as $value9)	{
-				$user_ref_node_id = $value9->nid;
-				$nids = array_keys($result9['node']);
-	      $items = node_load('node', $nids);
-	     // dpm($items);
+			if(!empty($fields9)){
+  		
+	  	
+				foreach ($fields9 as $key => $value9)	{
+					$user_ref_node_id = $value9->nid;
+		      $items = node_load($user_ref_node_id);
+		     // dpm($items);
 
-	      $author_id = $items->uid;
-	      $aids = user_load($author_id);
-	      $author_name = $aids->name;
-	      
-	      $item1 = field_get_items('node',$items,'field_feedback_')[0]['value'];
+		      $author_id = $items->uid;
+		      $aids = user_load($author_id);
+		      $author_name = $aids->name;
+		      
+		      $item1 = field_get_items('node',$items,'field_feedback_')[0]['value'];
 	     
-	      $item2 = field_get_items('node',$items,'field_rating')[0]['value'];
+		      $item2 = field_get_items('node',$items,'field_rating')[0]['value'];
+		      
+
+		      $item3 = field_get_items('node',$items,'field_time_line')[0]['tid'];
+		      $period_id = taxonomy_term_load($item3);
+					$period_name = $period_id->name;
+
 	      
+					$item4 = field_get_items('node',$items,'field_users')[0]['target_id'];
+					$uids = user_load($item4);
+					$user_name = $uids->name;
 
-	      $item3 = field_get_items('node',$items,'field_time_line')[0]['tid'];
-	      $period_id = taxonomy_term_load($item3);
-				$period_name = $period_id->name;
-
-	      
-				$item4 = field_get_items('node',$items,'field_users')[0]['target_id'];
-				$uids = user_load($item4);
-				$user_name = $uids->name;
-
-				
-				$subrow = array();
-			  $subrow[] = $user_name;
-			  $subrow[] = $author_name;
-			  $subrow[] = $item1;
-			  $subrow[] = $item2;
-			  $subrow[] = $period_name;
-			  $rows[] = $subrow;
+					
+					$subrow = array();
+				  $subrow[] = $user_name;
+				  $subrow[] = $author_name;
+				  $subrow[] = $item1;
+				  $subrow[] = $item2;
+				  $subrow[] = $period_name;
+				  $rows[] = $subrow;
+				}  
 			}
 		}	
 	
@@ -295,6 +364,8 @@ function reviews_feedback(){
 		return theme('table', array('header' => $header, 'rows' => $rows, 'caption' => 'GIVE FEEDBACK')); 
 	}    
 }
+			
+
 				
 /*
 *	showing all the feedbacks given by mentor to selected user.      
@@ -309,8 +380,8 @@ function reviews_mentor(){
 
 	$query10 = new EntityFieldQuery();
   $query10->entityCondition('entity_type', 'node')
-         ->entityCondition('bundle', 'self_rating')
-         ->propertyCondition('uid',$userid_condition,'=');
+          ->entityCondition('bundle', 'self_rating')
+          ->propertyCondition('uid',$userid_condition,'=');
 	
   $result10 = $query10->execute();
   $header = array(t('Learning'), t('Timespent'), t('Productivity'), t('Mentor Assigned'));
@@ -430,7 +501,13 @@ function myview(){
 
 
 function admin_review_form_review_node_form_alter(&$form, &$form_state, $form_id){
-	
+	dpm($form);
+	dpm($form_state);
+
+	global $user;
+	$current_user_timestamp = $user->timestamp;
+	$current_user_date = format_date($current_user_timestamp,'custom','d');
+	$current_user_month = format_date($current_user_timestamp,'custom','m');
 	
 	$query_param = drupal_get_query_parameters();
 	if(!empty($query_param)){
@@ -443,7 +520,20 @@ function admin_review_form_review_node_form_alter(&$form, &$form_state, $form_id
 
 	$form['#prefix'] = '<div>' .$class. '</div>';
   $form['#suffix'] = '</div>';
+
+  if($current_user_date >'5' and $current_user_date <'21'){
+  	$session1 = '27';
+  	$form['field_session']['und']['#default_value'] = $session1;
+  }
+  else{
+  	$session2 = '28';
+  	$form['field_session']['und']['#default_value'] = $session2;
+  }
+  $form['field_session']['#access'] = FALSE;
+	$form['field_select_user']['#access'] = FALSE;
+	$form['field_select_user']['und']['#default_value'] = $userid_condition;
 }
+
 
 	
 	
