@@ -26,8 +26,9 @@ function admin_review_menu() {
 */
 
 
-function all_feedbacks($form, &$form_state) {
-
+function admin_review_form($form, &$form_state) {
+	// dpm($form);
+	// dpm($form_state);
   $form['userslist'] = array(
 	 '#type' => 'select',
 	 '#title' => t('Choose User'), 
@@ -42,11 +43,69 @@ function all_feedbacks($form, &$form_state) {
 }
 
 /* 
-*form submit
+*form validation
 */
 
-function all_feedbacks_validate(){
-	
+function admin_review_form_validate($form, &$form_state){
+	global $user;
+	$current_user_timestamp = $user->timestamp;
+	$current_user_date = format_date($current_user_timestamp,'custom','d');
+	$current_user_month = format_date($current_user_timestamp,'custom','m');
+
+
+	$query5 = db_select('node', 'n')
+		      ->condition('n.type', 'review','=')
+		      ->fields('n',array('nid','uid','created','title'));
+	$result5 = $query5->execute();
+  $fields5 =$result5->fetchAll();
+
+  if(!empty($fields5)){
+		foreach ($fields5 as $key => $value5) {
+			$nid = $value5->nid;
+			$timestamp = $value5->created;
+			$nodes = node_load($nid);
+			// dpm($nodes);
+
+			$used_user_date = format_date($timestamp ,'custom','d');
+			$used_user_month = format_date($timestamp ,'custom','m');
+
+
+			$selected_user_id = field_get_items('node', $nodes, 'field_select_user')[0]['target_id'];
+
+			$user_session = field_get_items('node', $nodes, 'field_session')[0]['tid'];
+
+
+			if($current_user_date >'5' and $current_user_date <'21') {
+
+				if($form_state['input']['userslist'] == $selected_user_id and  $current_user_month == $used_user_month ) {
+
+					form_set_error('userslist', t('You have already reviewed for this user.'));
+				}
+
+				else {
+					continue;
+				}
+			}
+
+			else {
+
+				if($form_state['input']['userslist'] == $selected_user_id and  $current_user_month == $used_user_month) {
+
+					form_set_error('userslist', t('You have already reviewed for this user.'));
+				}
+
+				else if($form_state['input']['userslist'] == $selected_user_id and  ($current_user_month+1) == $used_user_month) {
+					
+					form_set_error('userslist', t('You have already reviewed for this user.'));
+				}
+
+
+				else {
+					continue;
+				}
+			}
+		}
+	}
 }
 
 
@@ -55,7 +114,7 @@ function all_feedbacks_validate(){
 *form submit
 */
 
-function all_feedbacks_submit($form, &$form_state) {
+function admin_review_form_submit($form, &$form_state) {
 	$user_id_value = $form_state['values']['userslist'];
 	drupal_goto('node/add/review', array('query'=>array('user_id' => $user_id_value)
 	));
@@ -406,8 +465,8 @@ function reviews_mentor(){
 	  	
 		  	$query12 = new EntityFieldQuery();
 				$query12->entityCondition('entity_type', 'node')
-				   	   ->entityCondition('bundle', 'mentor_rating')
-				   	   ->propertyCondition('nid', $nid2 ,'=');
+				   	    ->entityCondition('bundle', 'mentor_rating')
+				   	    ->propertyCondition('nid', $nid2 ,'=');
 				$result12 = $query12->execute();
 				//dpm($result12);
 				foreach ($result12['node'] as $value12)	{
@@ -482,7 +541,7 @@ function reviews_mentor(){
 
 
 function myview(){
-	$form_view = drupal_get_form('all_feedbacks');
+	$form_view = drupal_get_form('admin_review_form');
 	$output = drupal_render($form_view);
 	/*$output .= reviews_self();
 	$output .= reviews_feedback();
@@ -501,8 +560,8 @@ function myview(){
 
 
 function admin_review_form_review_node_form_alter(&$form, &$form_state, $form_id){
-	dpm($form);
-	dpm($form_state);
+	// dpm($form);
+	// dpm($form_state);
 
 	global $user;
 	$current_user_timestamp = $user->timestamp;

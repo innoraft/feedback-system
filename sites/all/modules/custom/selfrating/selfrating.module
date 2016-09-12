@@ -12,7 +12,29 @@ function selfrating_form_self_rating_node_form_alter(&$form, &$form_state, $form
 // check user is giving self appraisal once in particular timeline
 
 function validation_func($form, &$form_state) {
+	dpm($form_state);
+	dpm($form);
 	global $user;
+	$current_user_timestamp = $user->timestamp;
+	$current_user_date = format_date($current_user_timestamp,'custom','d');
+	$current_user_month = format_date($current_user_timestamp,'custom','m');
+
+
+	if($current_user_date > '05' and $current_user_date < '15') {
+	 	if($form_state['input']['field_time_line']['und'] != '25') {
+	 		form_set_error('field_time_line', t('Please select PERIOD-I.'));
+	 	}
+ 	}
+
+
+ 	if($current_user_date > '20' and $current_user_date <= '31') {
+	 	if($form_state['input']['field_time_line']['und'] != '26') {
+	 		form_set_error('field_time_line', t('Please select PERIOD-II.'));
+	  }
+  }
+
+
+
 
 	$query2 = db_select('node', 'n')
 	        ->condition('n.uid', $user->uid, '=')
@@ -32,12 +54,8 @@ function validation_func($form, &$form_state) {
 		$user_date = format_date($timestamp ,'custom','d');
 		$user_month = format_date($timestamp ,'custom','m');	
 
-		$current_user_timestamp = $user->timestamp;
-		$current_user_date = format_date($current_user_timestamp,'custom','d');
-		$current_user_month = format_date($current_user_timestamp,'custom','m');
-
-
-		if($current_user_date > '5' and $current_user_date < '15') {
+		
+		if($current_user_date > '05' and $current_user_date < '15') {
 		 	if($form_state['input']['field_time_line']['und'] != '25') {
 		 		form_set_error('field_time_line', t('Please select PERIOD-I.'));
 		 	}
@@ -84,7 +102,7 @@ function validation_func($form, &$form_state) {
 
 
 
-		if(($current_user_date >= '1' and $current_user_date <= '5') || ($current_user_date >= '15' and $current_user_date <= '20')) {
+		if(($current_user_date >= '01' and $current_user_date <= '05') || ($current_user_date >= '15' and $current_user_date <= '20')) {
 
 			if($form_state['input']['field_time_line']['und'] == $user_timeline   and $current_user_month == $user_month){
   	 		
