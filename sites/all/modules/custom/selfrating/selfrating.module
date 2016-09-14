@@ -52,7 +52,14 @@ function validation_func($form, &$form_state) {
 		$user_timeline = field_get_items('node', $feed, 'field_time_line')[0]['tid'];
 
 		$user_date = format_date($timestamp ,'custom','d');
-		$user_month = format_date($timestamp ,'custom','m');	
+		$user_month = format_date($timestamp ,'custom','m');
+
+		global $user;
+		$current_user_timestamp = $user->timestamp;
+		$current_user_date = format_date($current_user_timestamp,'custom','d');
+		$current_user_month = format_date($current_user_timestamp,'custom','m');
+
+	
 
 		
 		if($current_user_date > '05' and $current_user_date < '15') {

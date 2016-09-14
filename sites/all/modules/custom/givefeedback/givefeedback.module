@@ -3,11 +3,13 @@
 // add custom validation function
 
 
-function givefeedback_form_give_feedback_node_form_alter(&$form, &$form_state, $form_id){
-	dpm($form_id);
-	// dpm($form_state);
-	// dpm($form);
+function givefeedback_form_give_feedback_node_form_alter(&$form, &$form_state, $form_id) {
+	//dpm($form_id);
+	dpm($form_state);
+	dpm($form);
 	$form['#validate'][] = 'new_valid_function';
+
+	
 }
 	  		 
   	 
@@ -64,6 +66,13 @@ function new_valid_function(&$form, &$form_state) {
 
 		$user_date = format_date($timestamp ,'custom','d');
 		$user_month = format_date($timestamp ,'custom','m');
+
+
+		global $user;
+		$current_user_timestamp = $user->timestamp;
+		$current_user_date = format_date($current_user_timestamp,'custom','d');
+		$current_user_month = format_date($current_user_timestamp,'custom','m');
+
 
 
 

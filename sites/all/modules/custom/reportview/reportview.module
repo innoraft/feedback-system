@@ -1,0 +1,24 @@
+<?php 
+
+
+// for applying contextual filters in report page 1 view
+
+function feedback_title(){
+	global $user;
+	$uid = $user->uid;
+
+	$query15 = db_select('node', 'n')
+	        ->condition('n.type', 'self_rating','=')
+	        ->condition('n.uid', $uid,'=')
+          ->fields('n',array('nid'));
+
+  $result15 = $query15->execute();
+  $fields15 =$result15->fetchAll();
+
+  $nid = array();
+  foreach ($fields15 as $key => $value15) {
+		$nid[] = $value15->nid;
+	}
+	
+	return implode("+",$nid);
+}
