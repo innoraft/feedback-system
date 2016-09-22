@@ -4,22 +4,29 @@
 
 
 function givefeedback_form_give_feedback_node_form_alter(&$form, &$form_state, $form_id) {
-	//dpm($form_id);
-	dpm($form_state);
-	dpm($form);
+	
+	// dpm($form_state);
+	// dpm($form);
 	$form['#validate'][] = 'new_valid_function';
+	$form['#submit'][] = 'new_submit_function';
 
 	
+	$form['field_user_encrypt']['#access'] = FALSE;
 }
+	
+	
+
+
+	
 	  		 
   	 
-  //In custom validation function
-  // check whether the selected time period is valid
-  // check if current has not given more than one feedback for the selected target user for the selected time period.
+//In custom validation function
+// check whether the selected time period is valid
+// check if current has not given more than one feedback for the selected target user for the selected time period.
 
 		
 function new_valid_function(&$form, &$form_state) {
-	dpm($form_state);
+	// dpm($form_state);
 	
 	global $user;
 	$current_user_timestamp = $user->timestamp;
@@ -30,7 +37,7 @@ function new_valid_function(&$form, &$form_state) {
 
 
 	if($current_user_date > '05' and $current_user_date < '15') {
-			dpm('fdsfdsfds');
+		
 		if($form_state['input']['field_time_line']['und'] != '25') {
 			form_set_error('field_time_line', t('Please select PERIOD-I.'));
 		}
@@ -44,11 +51,15 @@ function new_valid_function(&$form, &$form_state) {
 	}
 
 
-
+	
 	$query1 = db_select('node', 'n')
-	       ->condition('n.uid', $user->uid, '=')
+	       // ->condition('n.uid',, '=')
 	       ->condition('n.type','give_feedback','=')
 	       ->fields('n', array('nid', 'type','created'));
+
+	$query1 ->join('field_data_field_user_encrypt','en','n.nid = en.entity_id');  
+	$query1 ->fields('en',array('field_user_encrypt_value'));
+
 	$result1 = $query1->execute();
 	$options = $result1->fetchAll();
 
@@ -153,13 +164,30 @@ function new_valid_function(&$form, &$form_state) {
 
 
 	
+function new_submit_function(&$form, &$form_state) {
+  // dpm($form);
+	// dpm($form_state);
 
-
-
-
-
- 
-  	
 	
+	// $form_state['values']['uid'] = '0';
+
+	$author_id = $form_state['values']['uid'];
+	$encypted_author_id = md5($author_id);
+	$form_state['values']['field_user_encrypt']['und'][0]['value'] = $encypted_author_id;
+}	
+
+	
+	
+	
+
+
+
+function givefeedback_node_presave($node){
+	// dpm($node);
+  if ($node->type == 'give_feedback') {
+		$node->uid = '0';
+    // dpm($node->uid);
+  }
+}
 
 

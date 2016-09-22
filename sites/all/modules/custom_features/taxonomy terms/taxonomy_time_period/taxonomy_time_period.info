@@ -1,0 +1,7 @@
+name = taxonomy time period
+core = 7.x
+package = Features
+features[features_api][] = api:2
+features[taxonomy][] = time_period
+features_exclude[dependencies][features] = features
+features_exclude[dependencies][taxonomy] = taxonomy

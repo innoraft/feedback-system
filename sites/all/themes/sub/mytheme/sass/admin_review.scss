@@ -1,0 +1,55 @@
+.page-admin-reviews- {
+	#views-exposed-form-admin-reviews--page,#views-exposed-form-admin-reviews--page-2,#views-exposed-form-admin-reviews--page-3,#views-exposed-form-admin-reviews--page-5 {
+		.views-exposed-form {
+			.views-widget-filter-date_filter {
+				width: 50%;
+				#edit-date-filter-min-wrapper {
+					float: left;
+				}
+				#edit-date-filter-max-wrapper {
+			    float: right;
+				}
+				#edit-date-filter-min-wrapper,#edit-date-filter-max-wrapper{
+					label {
+				    float: left;
+				    margin-right: 5px;
+		        margin-top: 5px;
+					}
+				}
+			}
+
+			#edit-uid-1-wrapper,#edit-name-wrapper,#edit-uid-wrapper {
+				display: none;
+			}
+			
+			.views-submit-button {
+				width: 50%;
+				button.btn {
+			    margin-left: 5%;
+				}
+				.form-item-reportview-self-users,.form-item-reportview-from-others-users,.form-item-reportview-from-mentor-users,.form-item-reportview-as-a-mentor-users {
+					float: left;
+				}
+			}
+		}
+	}
+	.view-content {
+		margin-top: 3%;
+    margin-bottom: 2%;
+    .views-field-field-learning,.views-field-field-time-spent,.views-field-field-productivity,.views-field-field-feedback-,.views-field-field-rating,.views-field-field-mentor,.views-field-field-users,.views-field-name,.views-field-field-xyz {
+    	.views-label-field-learning,.views-label-field-time-spent,.views-label-field-productivity,.views-label-field-feedback-,.views-label-field-rating,.views-label-field-mentor,.views-label-field-users,.views-label-name,.views-label-field-xyz {
+    		color: cornflowerblue;
+		    font-weight: bolder;
+		    text-transform: uppercase;
+    	}
+    	.field-content {
+	    	ol,ul {
+  		    margin-left: -7%;
+	    	}
+	    }
+    }
+	}
+	.text-center {
+		margin-top: 2%;
+	}
+}

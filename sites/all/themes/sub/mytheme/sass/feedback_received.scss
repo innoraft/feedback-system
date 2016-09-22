@@ -1,0 +1,58 @@
+.page-reports {
+	#views-exposed-form-report-page1-page,#views-exposed-form-report-page1-page-2,#views-exposed-form-report-page1-page-3,#views-exposed-form-report-page1-page-5 {
+		.views-exposed-form {
+			.views-widget-filter-date_filter {
+				width: 50%;
+				#edit-date-filter-min-wrapper {
+					float: left;
+				}
+				#edit-date-filter-max-wrapper {
+			    float: right;
+				}
+				#edit-date-filter-min-wrapper,#edit-date-filter-max-wrapper{
+					label {
+				    float: left;
+				    margin-right: 5px;
+		        margin-top: 5px;
+					}
+				}
+			}
+		}
+	}
+
+	.view-content {
+		margin-top: 3%;
+    margin-bottom: 2%;
+    .views-field-field-learning,.views-field-field-time-spent,.views-field-field-productivity,.views-field-field-feedback-,.views-field-field-rating {
+    	.views-label-field-learning,.views-label-field-time-spent,.views-label-field-productivity,.views-label-field-feedback-,.views-label-field-rating {
+    		color: cornflowerblue;
+		    font-weight: bolder;
+    	}
+    	.field-content {
+    		ol,ul {
+    			margin-left: -7%;
+    		}
+    	}
+    }
+		.views-field-comment-body,.views-field-field-final-rating,.views-field-field-final-summary {
+  		.views-label-comment-body,.views-label-field-final-rating,.views-label-field-final-summary {
+    		color: cornflowerblue;
+		    font-weight: bolder;
+		    text-transform: uppercase;
+		  }
+	    .field-content {
+	    	ol,ul {
+  		    margin-left: -7%;
+	    	}
+	    }
+  	}
+	}
+
+    
+	.text-center {
+		margin-top: 2%;
+	}
+}
+
+		
+			

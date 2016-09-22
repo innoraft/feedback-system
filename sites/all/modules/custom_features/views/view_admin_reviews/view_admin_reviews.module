@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the view admin_reviews feature.
+ */
+
+include_once 'view_admin_reviews.features.inc';

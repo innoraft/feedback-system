@@ -1,0 +1,7 @@
+name = taxonomy admin time line
+core = 7.x
+package = Features
+features[features_api][] = api:2
+features[taxonomy][] = admin_time_line
+features_exclude[dependencies][features] = features
+features_exclude[dependencies][taxonomy] = taxonomy

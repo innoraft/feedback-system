@@ -2,6 +2,21 @@
 
 
 /*
+* Implementation of hook permission for admin review page
+*/ 
+
+
+function admin_review_permission(){
+  return array(
+		'access mypage' => array(
+		'title' => t('admin feedbacks'),
+		'description' => t('see all feedbacks only for admin'),
+    ),
+  );
+}
+
+
+/*
 * Implementation of hook menu for admin review page
 */ 
 	
@@ -14,7 +29,8 @@ function admin_review_menu() {
 		'title' => 'all reviews',
 		'description' => 'all feedback will be shown.',
 		'page callback' => 'myview',
-		'access callback' => TRUE
+		'access callback' => 'user_access',
+		'access arguments'=> array('access mypage'),
 	);
 
 	return $items;
@@ -349,7 +365,7 @@ function reviews_feedback(){
 		
 		$user_ref_node_title = array();
 
-		$header = array(t('Username'), t('Feedback given by'), t('Feedback'), t('Rating'), t('Timeline'));
+		$header = array(t('Username'),  t('Feedback'), t('Rating'), t('Timeline'));
 		$rows = array();
 	 
   	foreach ($result8 as $value8) {
@@ -389,9 +405,7 @@ function reviews_feedback(){
 		      $items = node_load($user_ref_node_id);
 		     // dpm($items);
 
-		      $author_id = $items->uid;
-		      $aids = user_load($author_id);
-		      $author_name = $aids->name;
+		      
 		      
 		      $item1 = field_get_items('node',$items,'field_feedback_')[0]['value'];
 	     
@@ -408,13 +422,14 @@ function reviews_feedback(){
 					$user_name = $uids->name;
 
 					
+					
 					$subrow = array();
 				  $subrow[] = $user_name;
-				  $subrow[] = $author_name;
 				  $subrow[] = $item1;
 				  $subrow[] = $item2;
 				  $subrow[] = $period_name;
 				  $rows[] = $subrow;
+				  
 				}  
 			}
 		}	
@@ -437,23 +452,57 @@ function reviews_mentor(){
 		//dpm($userid_condition);
 	}
 
-	$query10 = new EntityFieldQuery();
-  $query10->entityCondition('entity_type', 'node')
-          ->entityCondition('bundle', 'self_rating')
-          ->propertyCondition('uid',$userid_condition,'=');
+	global $user;
+	$current_user_timestamp = $user->timestamp;
+	$current_user_date = format_date($current_user_timestamp,'custom','d');
+	$current_user_month = format_date($current_user_timestamp,'custom','m');
+	$current_user_year = format_date($current_user_timestamp,'custom','Y');
+	$current_user_month_less = $current_user_month -1;
+	$date1 = mktime(0,0,0,$current_user_month_less,15,$current_user_year);
+	$date2 = mktime(23,59,59,$current_user_month,05,$current_user_year);
+	$date3 = mktime(0,0,0,$current_user_month,01,$current_user_year);
+	$date4 = mktime(23,59,59,$current_user_month,20,$current_user_year);
+
+	if($current_user_date >'5' and $current_user_date <'21') {
+	 	$query10 = db_select('node', 'n')
+		       ->condition('n.type', 'self_rating','=')
+		       ->condition('n.created',array($date1,$date2),'BETWEEN')
+		       ->condition('n.uid',$userid_condition,'=')
+		       ->fields('n',array('nid','uid','created','title'));
+
+   	$query10->join('field_data_field_time_line','tl','n.nid = tl.entity_id');
+   	$query10->condition('tl.field_time_line_tid','26','=');
+   	$query10->fields('tl',array('field_time_line_tid'));
+  }  
+
+  else {
+  	$query10 = db_select('node', 'n')
+		       ->condition('n.type', 'self_rating','=')
+		       ->condition('n.created',array($date3,$date4),'BETWEEN')
+		       ->condition('n.uid',$userid_condition,'=')
+		       ->fields('n',array('nid','uid','created','title'));
+
+   	$query10->join('field_data_field_time_line','tl','n.nid = tl.entity_id');
+   	$query10->condition('tl.field_time_line_tid','25','=');
+   	$query10->fields('tl',array('field_time_line_tid'));
+  }
+	
 	
   $result10 = $query10->execute();
-  $header = array(t('Learning'), t('Timespent'), t('Productivity'), t('Mentor Assigned'));
-		$rows = array();
+  $fields10 =$result10->fetchAll();
+
+  if(!empty($fields10)) {
+	
+	  $header = array(t('Learning'), t('Timespent'), t('Productivity'), t('Mentor Assigned'), t('Feedback given to node title'));
+			$rows = array();
 	 
-  if(!empty($result10)) {
-  	foreach ($result10['node'] as $value10) {
+  	foreach ($fields10 as $key => $value10) {
 			$nid1 = $value10->nid;
 			$nodes1 = node_load($nid1);
 
 			$query11 =db_select('field_data_field_xyz','x')
          ->condition('x.field_xyz_target_id',$nid1,'=')
-				 ->fields('x',array('entity_type','bundle','entity_id'))
+				 ->fields('x',array('entity_id'))
 				 ->execute();
 
 		  $result11 = $query11->fetchAll();
@@ -515,12 +564,16 @@ function reviews_mentor(){
 						$rating3 = $itemid3->field_rating['und'][0]['value'];
 					}
 
+					$item4 = field_get_items('node',$items3,'field_xyz')[0]['target_id'];
+					$self_title_nid =node_load($item4);
+					$self_appraisal_feedback_title = $self_title_nid->title;
 
 					$subrow = array();
 				  $subrow[] = $feedback1.' <br/> '.$rating1;
 				  $subrow[] = $feedback2.' <br/> '.$rating2;
 				  $subrow[] = $feedback3.' <br/> '.$rating3;
 				  $subrow[] = $mentor_name_author;
+				  $subrow[] = $self_appraisal_feedback_title;
 				  $rows[] = $subrow;
 
 
@@ -560,8 +613,8 @@ function myview(){
 
 
 function admin_review_form_review_node_form_alter(&$form, &$form_state, $form_id){
-	// dpm($form);
-	// dpm($form_state);
+	//dpm($form);
+	//dpm($form_state);
 
 	global $user;
 	$current_user_timestamp = $user->timestamp;

@@ -22,3 +22,159 @@ function feedback_title(){
 	
 	return implode("+",$nid);
 }
+
+
+
+/*
+* function for choosing users
+*/
+
+function getUsers1(){
+	$query6 = db_select('users','u')
+					->condition('u.uid',0,'<>')
+					->fields('u',array('uid','name'))
+					->execute();
+	$result6 = $query6->fetchAll();
+	$list = array();
+	$list['a'] = 'Select';
+
+	foreach ($result6 as $key => $value6) {
+		$list[$value6->uid] = $value6->name;
+	}
+	return $list;
+}
+
+
+// to get the value for form fields
+
+/*function getTargetid(){
+	$query16 = db_select('node', 'n')
+	          ->condition('n.type', 'self_rating','=')
+	          ->condition('n.uid',$userid)
+            ->fields('n',array('nid','title','uid'));
+  $query16 ->join('field_data_field_xyz','xy', 'n.nid = xy.field_xyz_target_id');
+  $query16 ->fields('xy',array('field_xyz_target_id','entity_id'));
+
+	  $result16 = $query16->execute();
+	  $fields16 =$result16->fetchAll();
+
+
+	  
+	  foreach ($fields16 as $key => $value16) {
+			$mentor_nid = $value16->entity_id;
+      $nodes = node_load($mentor_nid);
+			// $items = field_get_items('node',$nodes,'field_xyz')[0]['target_id'];
+			// $xy = node_load($items);
+			// dpm($xy);
+		}
+}
+*/
+
+/*
+* for admin reviews view - for page "from mentor"
+*/
+
+function reportview_form_alter(&$form, &$form_state, $form_id) {
+
+	drupal_add_js(drupal_get_path('module', 'reportview') . '/reportview.js');
+	$path =  current_path();
+	// dpm($path);
+	// dpm($form_state);
+
+	if ($form['#id'] == 'views-exposed-form-admin-reviews--page-3') {
+		
+		$form['reportview_from_mentor_users'] = array(
+		 '#type' => 'select',
+		 '#title' => t('Choose User'), 
+		 '#options' => getUsers1(),
+		 '#validated' => TRUE
+	  );
+		 
+		// dpm($form);
+		 
+
+	  $form['uid'] = array(
+	    '#type' => 'hidden',
+    );
+	}
+	  
+
+	if ($form['#id'] == 'views-exposed-form-admin-reviews--page') {
+		
+		$form['reportview_self_users'] = array(
+		 '#type' => 'select',
+		 '#title' => t('Choose User'), 
+		 '#options' => getUsers1(),
+		 '#validated' => TRUE
+	  );
+	
+
+		$form['uid_1'] = array(
+	    '#type' => 'hidden',
+    );
+	}
+
+	if ($form['#id'] == 'views-exposed-form-admin-reviews--page-2') {
+		
+		$form['reportview_from_others_users'] = array(
+		 '#type' => 'select',
+		 '#title' => t('Choose User'), 
+		 '#options' => getUsers1(),
+		 '#validated' => TRUE
+	  );
+	
+
+		$form['name'] = array(
+	    '#type' => 'hidden',
+	    
+    );
+	}
+
+	if ($form['#id'] == 'views-exposed-form-admin-reviews--page-5') {
+		
+		$form['reportview_as_a_mentor_users'] = array(
+		 '#type' => 'select',
+		 '#title' => t('Choose User'), 
+		 '#options' => getUsers1(),
+		 '#validated' => TRUE
+	  );
+	
+
+		$form['uid'] = array(
+	    '#type' => 'hidden',
+    );
+	}
+	
+}
+
+
+
+/*
+* for changes in "report2" view in page "others"(feedback given menu).
+*/
+
+function reports2_view_others(){
+	global $user;
+	$current_user_encypted_id = md5($user->uid);
+
+	$query16 = db_select('field_data_field_user_encrypt','en')
+	        ->condition('en.field_user_encrypt_value', $current_user_encypted_id,'=')
+          ->fields('en',array('entity_id'));
+
+  $result16 = $query16->execute();
+  $fields16 =$result16->fetchAll();
+
+  $entity_id = array();
+  foreach ($fields16 as $key => $value16) {
+		$entity_id[] = $value16->entity_id;
+	}
+	return implode("+",$entity_id);
+}		
+	
+
+
+		
+
+	
+
+

@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the view mentor rating changes feature.
+ */
+
+include_once 'view_mentor_rating_changes.features.inc';

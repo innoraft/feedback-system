@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the view feedback given  feature.
+ */
+
+include_once 'view_feedback_given_.features.inc';

@@ -1,0 +1,6 @@
+name = role mentor
+core = 7.x
+package = Features
+features[features_api][] = api:2
+features[user_role][] = mentor
+features_exclude[dependencies][features] = features

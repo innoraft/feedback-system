@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the content type mentor rating feature.
+ */
+
+include_once 'content_type_mentor_rating.features.inc';

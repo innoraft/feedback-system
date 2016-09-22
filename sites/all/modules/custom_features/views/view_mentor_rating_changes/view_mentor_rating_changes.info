@@ -1,0 +1,8 @@
+name = view mentor rating changes
+core = 7.x
+package = Features
+features[ctools][] = views:views_default:3.0
+features[features_api][] = api:2
+features[views_view][] = mentor_rating_changes
+features_exclude[dependencies][entityreference] = entityreference
+features_exclude[dependencies][views] = views

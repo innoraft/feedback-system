@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the content type give feedback feature.
+ */
+
+include_once 'content_type_give_feedback.features.inc';

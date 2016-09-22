@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the content type self rating feature.
+ */
+
+include_once 'content_type_self_rating.features.inc';

@@ -1,0 +1,7 @@
+name = view field collection view
+core = 7.x
+package = Features
+features[ctools][] = views:views_default:3.0
+features[features_api][] = api:2
+features_exclude[dependencies][field_collection_views] = field_collection_views
+features_exclude[dependencies][views] = views

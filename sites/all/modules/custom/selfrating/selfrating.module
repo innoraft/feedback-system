@@ -3,7 +3,7 @@
 // add custom validation
 
 function selfrating_form_self_rating_node_form_alter(&$form, &$form_state, $form_id){
-	dpm($form_state);
+	// dpm($form_state);
 	$form['#validate'][] = 'validation_func';
 }
 
@@ -12,8 +12,8 @@ function selfrating_form_self_rating_node_form_alter(&$form, &$form_state, $form
 // check user is giving self appraisal once in particular timeline
 
 function validation_func($form, &$form_state) {
-	dpm($form_state);
-	dpm($form);
+	// dpm($form_state);
+	// dpm($form);
 	global $user;
 	$current_user_timestamp = $user->timestamp;
 	$current_user_date = format_date($current_user_timestamp,'custom','d');
