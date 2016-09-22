@@ -53,7 +53,6 @@ function new_valid_function(&$form, &$form_state) {
 
 	
 	$query1 = db_select('node', 'n')
-	       // ->condition('n.uid',, '=')
 	       ->condition('n.type','give_feedback','=')
 	       ->fields('n', array('nid', 'type','created'));
 
