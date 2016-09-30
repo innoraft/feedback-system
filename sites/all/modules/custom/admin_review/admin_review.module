@@ -205,27 +205,22 @@ function reviews_self(){
 	$query_param = drupal_get_query_parameters();
 	if(!empty($query_param)){
 		$userid_condition = $query_param['user_id'];
-		//dpm($userid_condition);
 	}
-	global $user;
-	$current_user_timestamp = $user->timestamp;
-	$current_user_date = format_date($current_user_timestamp,'custom','d');
-	$current_user_month = format_date($current_user_timestamp,'custom','m');
-	$current_user_year = format_date($current_user_timestamp,'custom','Y');
-	$current_user_month_less = $current_user_month -1;
-	$date1 = mktime(0,0,0,$current_user_month_less,15,$current_user_year);
-	$date2 = mktime(23,59,59,$current_user_month,05,$current_user_year);
-	$date3 = mktime(0,0,0,$current_user_month,01,$current_user_year);
-	$date4 = mktime(23,59,59,$current_user_month,20,$current_user_year);
+		
+	
+	/**
+	* to get the current user data
+	*/	
+	$user_data = current_user_info();
 
 
 	/**
 	* query to get all self appraisal nodes for the selected user
 	*/
-	if($current_user_date >'5' and $current_user_date <'21') {
+	if($user_data['current_user_date'] >'5' and $user_data['current_user_date'] <'21') {
 	 	$query7 = db_select('node', 'n')
 		       ->condition('n.type', 'self_rating','=')
-		       ->condition('n.created',array($date1,$date2),'BETWEEN')
+		       ->condition('n.created',array($user_data['date1'],$user_data['date2']),'BETWEEN')
 		       ->condition('n.uid',$userid_condition,'=')
 		       ->fields('n',array('nid','uid'));
 
@@ -237,7 +232,7 @@ function reviews_self(){
   else{
   	$query7 = db_select('node', 'n')
 		       ->condition('n.type', 'self_rating','=')
-		       ->condition('n.created',array($date3,$date4),'BETWEEN')
+		       ->condition('n.created',array($user_data['date3'],$user_data['date4']),'BETWEEN')
 		       ->condition('n.uid',$userid_condition,'=')
 		       ->fields('n',array('nid','uid'));
 
@@ -257,7 +252,7 @@ function reviews_self(){
 		foreach ($fields7 as $key => $value7) {
 			$nid = $value7->nid;
 			$nodes = node_load($nid);
-			$node_timestamp = $nodes->created;
+			
 
 			/**
 		 	*field learning field collection extraction
@@ -333,16 +328,10 @@ function reviews_feedback(){
 		$userid_condition = $query_paramas['user_id'];
 	}
 
-	global $user;
-	$current_user_timestamp = $user->timestamp;
-	$current_user_date = format_date($current_user_timestamp,'custom','d');
-	$current_user_month = format_date($current_user_timestamp,'custom','m');
-	$current_user_year = format_date($current_user_timestamp,'custom','Y');
-	$current_user_month_less = $current_user_month -1;
-	$date1 = mktime(0,0,0,$current_user_month_less,15,$current_user_year);
-	$date2 = mktime(23,59,59,$current_user_month,05,$current_user_year);
-	$date3 = mktime(0,0,0,$current_user_month,01,$current_user_year);
-	$date4 = mktime(23,59,59,$current_user_month,20,$current_user_year);
+	/**
+	* to get the current user data
+	*/	
+	$user_data = current_user_info();
 	 
 	/**
 	* query to get all feedback received by selected user
@@ -365,10 +354,10 @@ function reviews_feedback(){
   		$nid= $value8->entity_id;
 
 
-  		if($current_user_date >'5' and $current_user_date <'21') {
+  		if($user_data['current_user_date'] >'5' and $user_data['current_user_date'] <'21') {
 			 	$query9 = db_select('node', 'n')
 				       ->condition('n.type', 'give_feedback','=')
-				       ->condition('n.created',array($date1,$date2),'BETWEEN')
+				       ->condition('n.created',array($user_data['date1'],$user_data['date2']),'BETWEEN')
 				       ->condition('n.nid',$nid,'=')
 				       ->fields('n',array('nid','uid'));
 
@@ -379,7 +368,7 @@ function reviews_feedback(){
 		  else{
 		  	$query9 = db_select('node', 'n')
 				       ->condition('n.type', 'give_feedback','=')
-				       ->condition('n.created',array($date3,$date4),'BETWEEN')
+				       ->condition('n.created',array($user_data['date3'],$user_data['date4']),'BETWEEN')
 				       ->condition('n.nid',$nid,'=')
 				       ->fields('n',array('nid','uid'));
 
@@ -440,21 +429,15 @@ function reviews_mentor(){
 		//dpm($userid_condition);
 	}
 
-	global $user;
-	$current_user_timestamp = $user->timestamp;
-	$current_user_date = format_date($current_user_timestamp,'custom','d');
-	$current_user_month = format_date($current_user_timestamp,'custom','m');
-	$current_user_year = format_date($current_user_timestamp,'custom','Y');
-	$current_user_month_less = $current_user_month -1;
-	$date1 = mktime(0,0,0,$current_user_month_less,15,$current_user_year);
-	$date2 = mktime(23,59,59,$current_user_month,05,$current_user_year);
-	$date3 = mktime(0,0,0,$current_user_month,01,$current_user_year);
-	$date4 = mktime(23,59,59,$current_user_month,20,$current_user_year);
+	/**
+	* to get the current user data
+	*/	
+	$user_data = current_user_info();
 
-	if($current_user_date >'5' and $current_user_date <'21') {
+	if($user_data['current_user_date'] >'5' and $user_data['current_user_date'] <'21') {
 	 	$query10 = db_select('node', 'n')
 		       ->condition('n.type', 'self_rating','=')
-		       ->condition('n.created',array($date1,$date2),'BETWEEN')
+		       ->condition('n.created',array($user_data['date1'],$user_data['date2']),'BETWEEN')
 		       ->condition('n.uid',$userid_condition,'=')
 		       ->fields('n',array('nid','uid','created','title'));
 
@@ -466,7 +449,7 @@ function reviews_mentor(){
   else {
   	$query10 = db_select('node', 'n')
 		       ->condition('n.type', 'self_rating','=')
-		       ->condition('n.created',array($date3,$date4),'BETWEEN')
+		       ->condition('n.created',array($user_data['date3'],$user_data['date4']),'BETWEEN')
 		       ->condition('n.uid',$userid_condition,'=')
 		       ->fields('n',array('nid','uid','created','title'));
 
@@ -616,9 +599,31 @@ function admin_review_form_review_node_form_alter(&$form, &$form_state, $form_id
 }
 
 
+/*
+** function to get the current user data 
+*/	
 	
-	
+function current_user_info() {
+  global $user;
+	$current_user_timestamp = $user->timestamp;
+  $info = array();
+	$info['current_user_date'] = format_date($current_user_timestamp,'custom','d');
 
+	$info['current_user_month'] = format_date($current_user_timestamp,'custom','m');
+
+	$info['current_user_year'] = format_date($current_user_timestamp,'custom','Y');
+
+	$info['current_user_month_less'] = $info['current_user_month'] - 1;
+
+	$info['date1'] = mktime(0,0,0,$info['current_user_month_less'],15,$info['current_user_year']);
+
+	$info['date2'] = mktime(23,59,59,$info['current_user_month'],05,$info['current_user_year']);
+	$info['date3'] = mktime(0,0,0,$info['current_user_month'],01,$info['current_user_year']);
+
+	$info['date4'] = mktime(23,59,59,$info['current_user_month'],20,$info['current_user_year']);
+
+	return $info;
+}
  
 
 
