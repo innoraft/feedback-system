@@ -1,23 +1,30 @@
 <?php
-// In form alter
-// add custom validation
+
+/** In form alter
+* add custom validation
+*/
 
 function selfrating_form_self_rating_node_form_alter(&$form, &$form_state, $form_id){
 	// dpm($form_state);
 	$form['#validate'][] = 'validation_func';
 }
 
-// In custom validation function
-// check whether time line is valid 
-// check user is giving self appraisal once in particular timeline
+/** In custom validation function
+* check whether time line is valid 
+* check user is giving self appraisal once in particular timeline
+*/
 
 function validation_func($form, &$form_state) {
-	// dpm($form_state);
-	// dpm($form);
+	
 	global $user;
 	$current_user_timestamp = $user->timestamp;
 	$current_user_date = format_date($current_user_timestamp,'custom','d');
 	$current_user_month = format_date($current_user_timestamp,'custom','m');
+	$current_user_year = format_date($current_user_timestamp,'custom','Y');
+	$current_user_month_less = $current_user_month - 1;
+	$current_user_month_more = $current_user_month + 1;
+	$date1 = mktime(0,0,0,$current_user_month_less,15,$current_user_year);
+	$date2 = mktime(0,0,0,$current_user_month_more,01,$current_user_year);
 
 
 	if($current_user_date > '05' and $current_user_date < '15') {
@@ -33,12 +40,14 @@ function validation_func($form, &$form_state) {
 	  }
   }
 
-
-
+/**
+*query to get all the nodes of self rating of login user and current month
+*/
 
 	$query2 = db_select('node', 'n')
 	        ->condition('n.uid', $user->uid, '=')
 	        ->condition('n.type','self_rating','=')
+	        ->condition('n.created',array($date1,$date2),'BETWEEN')
 	        ->fields('n', array('nid', 'type','created'));
 	$result2 = $query2->execute();
 	$options2 = $result2->fetchAll();
@@ -48,11 +57,12 @@ function validation_func($form, &$form_state) {
 		$timestamp = $value->created;
 		$feed = node_load($nid);
 
+		$user_date = format_date($timestamp ,'custom','d');
+		$user_month = format_date($timestamp ,'custom','m');
+
 		//$mentor_id = field_get_items('node', $feed, 'field_mentor')[0]['target_id'];
 		$user_timeline = field_get_items('node', $feed, 'field_time_line')[0]['tid'];
 
-		$user_date = format_date($timestamp ,'custom','d');
-		$user_month = format_date($timestamp ,'custom','m');
 
 		global $user;
 		$current_user_timestamp = $user->timestamp;

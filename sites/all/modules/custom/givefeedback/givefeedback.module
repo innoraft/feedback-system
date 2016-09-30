@@ -1,29 +1,22 @@
 <?php
-//In form alter 
-// add custom validation function
 
+/**In form alter 
+*add custom validation function
+*/
 
 function givefeedback_form_give_feedback_node_form_alter(&$form, &$form_state, $form_id) {
 	
-	// dpm($form_state);
-	// dpm($form);
 	$form['#validate'][] = 'new_valid_function';
 	$form['#submit'][] = 'new_submit_function';
-
-	
 	$form['field_user_encrypt']['#access'] = FALSE;
 }
-	
-	
-
-
-	
-	  		 
+  		 
   	 
-//In custom validation function
-// check whether the selected time period is valid
-// check if current has not given more than one feedback for the selected target user for the selected time period.
-
+/**In custom validation function
+* check whether the selected time period is valid
+* check if current has not given more than one feedback for the selected 
+* target user for the selected time period.
+*/
 		
 function new_valid_function(&$form, &$form_state) {
 	// dpm($form_state);
@@ -32,8 +25,13 @@ function new_valid_function(&$form, &$form_state) {
 	$current_user_timestamp = $user->timestamp;
 	$current_user_date = format_date($current_user_timestamp,'custom','d');
 	$current_user_month = format_date($current_user_timestamp,'custom','m');
+	$current_user_year = format_date($current_user_timestamp,'custom','Y');
+	$current_user_month_less = $current_user_month - 1;
+	$current_user_month_more = $current_user_month + 1;
+	$date1 = mktime(0,0,0,$current_user_month_less,15,$current_user_year);
+	$date2 = mktime(0,0,0,$current_user_month_more,01,$current_user_year);
 
-
+	$encrypt_current_user_id = md5($user->uid);
 
 
 	if($current_user_date > '05' and $current_user_date < '15') {
@@ -50,29 +48,29 @@ function new_valid_function(&$form, &$form_state) {
 		}
 	}
 
+/**
+*	query to get all nodes of give_feedback of login user and current month
+*/
 
-	
 	$query1 = db_select('node', 'n')
 	       ->condition('n.type','give_feedback','=')
+	       ->condition('n.created',array($date1,$date2),'BETWEEN')
 	       ->fields('n', array('nid', 'type','created'));
 
 	$query1 ->join('field_data_field_user_encrypt','en','n.nid = en.entity_id');  
-	$query1 ->fields('en',array('field_user_encrypt_value'));
+	$query1 ->condition('en.field_user_encrypt_value',$encrypt_current_user_id,'=')
+	        ->fields('en',array('field_user_encrypt_value'));
 
 	$result1 = $query1->execute();
 	$options = $result1->fetchAll();
 
-
-
-
-	
 	foreach ($options as $key => $value) {
 		$nid = $value->nid;
 		$timestamp = $value->created;
-		$feed = node_load($nid);
-		// dpm($feed);
-		$user_id = field_get_items('node', $feed, 'field_users')[0]['target_id'];
-		$user_period = field_get_items('node', $feed, 'field_time_line')[0]['tid'];
+		$nodes = node_load($nid);
+	
+		$user_id = field_get_items('node', $nodes, 'field_users')[0]['target_id'];
+		$user_period = field_get_items('node', $nodes, 'field_time_line')[0]['tid'];
 
 		$user_date = format_date($timestamp ,'custom','d');
 		$user_month = format_date($timestamp ,'custom','m');
@@ -82,9 +80,6 @@ function new_valid_function(&$form, &$form_state) {
 		$current_user_timestamp = $user->timestamp;
 		$current_user_date = format_date($current_user_timestamp,'custom','d');
 		$current_user_month = format_date($current_user_timestamp,'custom','m');
-
-
-
 
 		if($current_user_date > '05' and $current_user_date < '15') {
 			
@@ -161,13 +156,12 @@ function new_valid_function(&$form, &$form_state) {
 } 
 
 
+/** 
+* give_feedback node form submit handler changes
+*/
 
-	
 function new_submit_function(&$form, &$form_state) {
-  // dpm($form);
-	// dpm($form_state);
-
-	
+  
 	// $form_state['values']['uid'] = '0';
 
 	$author_id = $form_state['values']['uid'];
@@ -175,11 +169,9 @@ function new_submit_function(&$form, &$form_state) {
 	$form_state['values']['field_user_encrypt']['und'][0]['value'] = $encypted_author_id;
 }	
 
-	
-	
-	
-
-
+/**
+* give_feedback node form changes before node creation	
+*/
 
 function givefeedback_node_presave($node){
 	// dpm($node);
